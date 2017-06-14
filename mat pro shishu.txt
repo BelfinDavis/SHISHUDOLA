@@ -1,0 +1,73 @@
+function port5(handles)
+instrreset;
+obj=serial('com1');
+obj.BaudRate=9600;
+set(obj,'TimeOut',5);
+fopen(obj);
+flag=0;
+while 1
+    
+[fn,pn]=uigetfile('test/*.mat');
+[pn,fn]
+load([pn,fn])
+f=sleep;
+g=downsample(f,3);
+h=fft(g);
+i=medfilt1(h);
+plot(handles.axes1,1:length(i),abs(i));
+hold on;
+plot(handles.axes1,1:length(i),abs(h),'g');
+j=ifft(i);
+t2=abs(j);
+dis=[];
+E=dir('database\*.mat');
+for n=1:size(E,1)
+fname=E(n).name
+load(['database\' fname])
+a=sleep_base;
+b=downsample(a,3);
+
+c=fft(b);
+d=medfilt1(c);
+plot(handles.axes2,1:length(d),abs(d));
+hold on;
+plot(handles.axes2,1:length(d),abs(c),'r');
+e=ifft(d);
+t1=abs(e);
+
+dif=t1-t2;
+dis1=norm(dif);
+dis=[dis dis1];
+% % pause 
+end
+dis
+    
+[v,id]=min(dis);
+
+switch id
+    case 1
+        
+          disp('Baby awake');
+          flag=flag+1;
+             if flag<=3
+                set(handles.text1,'string','baby awake')
+                fwrite(obj,'1');
+                pause(3)
+
+           
+              elseif (flag>=4 && flag<8) 
+                 set(handles.text1,'string','play toy')
+                 fwrite(obj,'2');
+                 pause(3)
+
+              else
+                 fwrite(obj,'3');
+                 pause(3)
+                 end
+    case 2
+               disp('Baby sleeping')
+               fwrite(obj,'5');
+               pause(3)
+          
+end
+end
